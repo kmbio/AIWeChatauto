@@ -285,7 +285,7 @@ class DashScopeService:
                 "message": f"生成失败: {str(e)}"
             }
     
-    def generate_article_content(self, title: str, model: str = "qwen-turbo", word_count: int = None, format_template: str = '') -> str:
+    def generate_article_content(self, title: str,refer_content:str, model: str = "qwen-turbo", word_count: int = None, format_template: str = '') -> str:
         """
         生成公众号文章内容，支持自定义格式模板
         :param title: 文章标题
@@ -299,7 +299,7 @@ class DashScopeService:
             if format_template:
                 prompt = f"{PromptManager.ROLE_PROMPT}\n请根据以下HTML格式模板，生成一篇关于‘{title}’的公众号文章，排版核心风格要与模板一致，字数约{word_count}字，且最终输出的HTML内容总字符数必须小于等于{char_limit}字符。模板如下：\n{format_template}"
             else:
-                prompt = PromptManager.article_prompt(title, word_count, char_limit)
+                prompt = PromptManager.article_prompt(title, refer_content,word_count, char_limit)
             
             result = self.generate_content(prompt, model, max_tokens=4000)
             if result['success']:

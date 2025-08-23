@@ -56,6 +56,7 @@ class ArticleController:
                 }
             
             title = data.get('title', '').strip()
+            refer_content = data.get('content', '').strip()
             if not title:
                 logger.error("文章标题为空")
                 return {
@@ -63,7 +64,7 @@ class ArticleController:
                     'message': '请输入文章标题'
                 }
             
-            logger.info(f"开始生成文章，标题: {title}")
+            logger.info(f"开始生成文章，标题: {title} ，参考内容：{refer_content}")
             
             # 获取AI模型配置
             ai_model = data.get('ai_model', 'gemini')  # 默认使用Gemini
@@ -131,11 +132,11 @@ class ArticleController:
             logger.info(f"第一步：开始生成文章内容，使用模型: {model_name}")
             
             if ai_model == 'gemini':
-                content = self.gemini_service.generate_article_content(title, model_name, word_count, format_template=format_template)
+                content = self.gemini_service.generate_article_content(title,refer_content, model_name, word_count, format_template=format_template)
             elif ai_model == 'deepseek':
-                content = self.deepseek_service.generate_article_content(title, model_name, word_count, format_template=format_template)
+                content = self.deepseek_service.generate_article_content(title,refer_content, model_name, word_count, format_template=format_template)
             elif ai_model == 'dashscope':
-                content = self.dashscope_service.generate_article_content(title, model_name, word_count, format_template=format_template)
+                content = self.dashscope_service.generate_article_content(title,refer_content, model_name, word_count, format_template=format_template)
             else:
                 return {
                     'success': False,
@@ -170,6 +171,8 @@ class ArticleController:
                 image_count = max(1, min(3, int(word_count) // 500))
             else:
                 image_count = int(image_count)
+            # 测试不生图
+            # image_count = 1
             logger.info(f"文章字数约: {word_count}，计划生成配图数量: {image_count}")
 
             # 第四步：生成配图并插入
@@ -308,6 +311,8 @@ class ArticleController:
             # 记录草稿内容摘要
             logger.info(f"[草稿保存] 标题={article_data.get('title', 'Unknown')}, 内容前100字={processed_content[:100]}, 图片数={processed_content.count('<img')}")
             images = image_process_result['images']
+            # print(images)
+            logger.info(f"图片thumb_media_id信息: {images}")
             thumb_media_id = images[0]['media_id'] if images and images[0].get('media_id') else ''
             
             # 获取作者配置
@@ -461,7 +466,10 @@ class ArticleController:
             # 查找所有本地图片路径
             local_image_pattern = r'<img[^>]*src=["\'](cache\\[^"\']+)["\'][^>]*>'
             matches = re.findall(local_image_pattern, content)
-            
+            print("local_image_pattern", "content")
+
+            print( content)
+            print("matches",matches)
             processed_content = content
             images = []
             for local_path in matches:

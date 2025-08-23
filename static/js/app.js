@@ -9,34 +9,34 @@ class Utils {
         if (!toastContainer) {
             Utils.createToastContainer();
         }
-        
+
         const toast = Utils.createToast(message, type);
         document.getElementById('toast-container').appendChild(toast);
-        
+
         const bsToast = new bootstrap.Toast(toast);
         bsToast.show();
-        
+
         // 自动移除toast元素
         toast.addEventListener('hidden.bs.toast', () => {
             toast.remove();
         });
     }
-    
+
     static createToastContainer() {
         const container = document.createElement('div');
         container.id = 'toast-container';
         container.className = 'toast-container position-fixed top-0 end-0 p-3';
         document.body.appendChild(container);
     }
-    
+
     static createToast(message, type) {
         const toastTypes = {
             'success': 'text-bg-success',
-            'error': 'text-bg-danger', 
+            'error': 'text-bg-danger',
             'warning': 'text-bg-warning',
             'info': 'text-bg-info'
         };
-        
+
         const toastElement = document.createElement('div');
         toastElement.className = `toast ${toastTypes[type] || toastTypes.info}`;
         toastElement.setAttribute('role', 'alert');
@@ -52,13 +52,13 @@ class Utils {
         `;
         return toastElement;
     }
-    
+
     static addLog(message, level = 'info') {
         const timestamp = new Date().toLocaleString('zh-CN');
         const logEntry = `[${timestamp}] ${level.toUpperCase()}: ${message}`;
         console.log(logEntry);
     }
-    
+
     static formatFileSize(bytes) {
         if (bytes === 0) return '0 B';
         const k = 1024;
@@ -66,7 +66,7 @@ class Utils {
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
-    
+
     static updateCurrentTime() {
         const timeElement = document.getElementById('current-time');
         if (timeElement) {
@@ -85,25 +85,25 @@ class ApiClient {
                     'Content-Type': 'application/json',
                 },
             };
-            
+
             const response = await fetch(url, { ...defaultOptions, ...options });
             const data = await response.json();
-            
+
             if (!response.ok) {
                 throw new Error(data.message || '请求失败');
             }
-            
+
             return data;
         } catch (error) {
             Utils.addLog(`API请求失败: ${error.message}`, 'error');
             throw error;
         }
     }
-    
+
     static async get(url) {
         return this.request(url, { method: 'GET' });
     }
-    
+
     static async post(url, data) {
         return this.request(url, {
             method: 'POST',
@@ -125,20 +125,20 @@ class ConfigManager {
             Utils.showToast('加载配置失败: ' + error.message, 'error');
         }
     }
-    
+
     static async saveConfig() {
         try {
             const configData = this.getConfigFormData();
             Utils.addLog(`准备保存配置: ${JSON.stringify(configData)}`);
             console.log('配置数据:', configData);
-            
+
             const response = await ApiClient.post('/api/config', configData);
             console.log('保存响应:', response);
-            
+
             if (response.success) {
                 Utils.showToast('配置保存成功', 'success');
                 Utils.addLog('配置保存成功');
-                
+
                 // 重新加载配置以确认保存成功
                 await this.loadConfig();
             } else {
@@ -152,7 +152,7 @@ class ConfigManager {
             console.error('保存配置异常:', error);
         }
     }
-    
+
     static getConfigFormData() {
         return {
             wechat_appid: document.getElementById('wechat-appid')?.value || '',
@@ -168,7 +168,7 @@ class ConfigManager {
             content_source_url: document.getElementById('content-source-url')?.value || ''
         };
     }
-    
+
     static fillConfigForm(config) {
         if (document.getElementById('wechat-appid')) {
             document.getElementById('wechat-appid').value = config.wechat_appid || '';
@@ -204,18 +204,18 @@ class ConfigManager {
             document.getElementById('content-source-url').value = config.content_source_url || '';
         }
     }
-    
+
     static async testWeChatConnection() {
         try {
             Utils.addLog('开始测试微信连接');
             console.log('测试微信连接...');
-            
+
             const response = await ApiClient.post('/api/test-wechat', {});
             console.log('微信测试响应:', response);
             Utils.addLog(`微信测试响应: ${JSON.stringify(response)}`);
-            
+
             const statusElement = document.getElementById('wechat-status');
-            
+
             if (response.success) {
                 Utils.showToast('微信连接测试成功', 'success');
                 if (statusElement) {
@@ -240,18 +240,18 @@ class ConfigManager {
             console.error('微信测试异常:', error);
         }
     }
-    
+
     static async testGeminiConnection() {
         try {
             Utils.addLog('开始测试Gemini连接');
             console.log('测试Gemini连接...');
-            
+
             const response = await ApiClient.post('/api/test-gemini', {});
             console.log('Gemini测试响应:', response);
             Utils.addLog(`Gemini测试响应: ${JSON.stringify(response)}`);
-            
+
             const statusElement = document.getElementById('gemini-status');
-            
+
             if (response.success) {
                 Utils.showToast('Gemini连接测试成功', 'success');
                 if (statusElement) {
@@ -276,15 +276,15 @@ class ConfigManager {
                     if (statusElement) {
                         statusElement.textContent = '密钥无效';
                         statusElement.className = 'badge bg-danger';
+                    }
+                } else {
+                    Utils.showToast('Gemini连接测试失败: ' + response.message, 'error');
+                    if (statusElement) {
+                        statusElement.textContent = '连接失败';
+                        statusElement.className = 'badge bg-danger';
+                    }
                 }
-            } else {
-                Utils.showToast('Gemini连接测试失败: ' + response.message, 'error');
-                if (statusElement) {
-                    statusElement.textContent = '连接失败';
-                    statusElement.className = 'badge bg-danger';
-                }
-                }
-                
+
                 // 打印调试信息
                 if (response.debug_info) {
                     console.log('调试信息:', response.debug_info);
@@ -297,26 +297,26 @@ class ConfigManager {
             console.error('Gemini测试异常:', error);
         }
     }
-    
+
     static async loadGeminiModels() {
         try {
             Utils.addLog('开始加载Gemini模型列表');
             console.log('加载Gemini模型列表...');
-            
+
             const response = await ApiClient.get('/api/gemini-models');
             console.log('Gemini模型列表响应:', response);
             Utils.addLog(`Gemini模型列表响应: ${JSON.stringify(response)}`);
-            
+
             const modelSelect = document.getElementById('gemini-model');
             if (!modelSelect) {
                 Utils.addLog('模型选择下拉框未找到', 'error');
                 return;
             }
-            
+
             if (response.success && response.data.models && response.data.models.length > 0) {
                 // 清空现有选项
                 modelSelect.innerHTML = '';
-                
+
                 // 添加新选项
                 response.data.models.forEach(model => {
                     const option = document.createElement('option');
@@ -324,12 +324,12 @@ class ConfigManager {
                     option.textContent = this.formatModelName(model);
                     modelSelect.appendChild(option);
                 });
-                
+
                 // 设置当前选中的模型
                 if (response.data.current_model) {
                     modelSelect.value = response.data.current_model;
                 }
-                
+
                 Utils.addLog(`成功加载 ${response.data.models.length} 个模型`);
                 Utils.showToast(`成功加载 ${response.data.models.length} 个可用模型`, 'success');
             } else {
@@ -342,7 +342,7 @@ class ConfigManager {
             console.error('加载模型列表异常:', error);
         }
     }
-    
+
     static formatModelName(modelName) {
         // 格式化模型名称显示
         const modelMap = {
@@ -352,21 +352,21 @@ class ConfigManager {
             'gemini-1.5-flash': 'Gemini 1.5 Flash',
             'gemini-1.5-pro': 'Gemini 1.5 Pro'
         };
-        
+
         return modelMap[modelName] || modelName;
     }
-    
+
     static async testDeepSeekConnection() {
         try {
             Utils.addLog('开始测试DeepSeek连接');
             console.log('测试DeepSeek连接...');
-            
+
             const response = await ApiClient.post('/api/test-deepseek', {});
             console.log('DeepSeek测试响应:', response);
             Utils.addLog(`DeepSeek测试响应: ${JSON.stringify(response)}`);
-            
+
             const statusElement = document.getElementById('deepseek-status');
-            
+
             if (response.success) {
                 Utils.showToast('DeepSeek连接测试成功', 'success');
                 if (statusElement) {
@@ -399,7 +399,7 @@ class ConfigManager {
                         statusElement.className = 'badge bg-danger';
                     }
                 }
-                
+
                 // 打印调试信息
                 if (response.debug_info) {
                     console.log('调试信息:', response.debug_info);
@@ -412,26 +412,26 @@ class ConfigManager {
             console.error('DeepSeek测试异常:', error);
         }
     }
-    
+
     static async loadDeepSeekModels() {
         try {
             Utils.addLog('开始加载DeepSeek模型列表');
             console.log('加载DeepSeek模型列表...');
-            
+
             const response = await ApiClient.get('/api/deepseek-models');
             console.log('DeepSeek模型列表响应:', response);
             Utils.addLog(`DeepSeek模型列表响应: ${JSON.stringify(response)}`);
-            
+
             const modelSelect = document.getElementById('deepseek-model');
             if (!modelSelect) {
                 Utils.addLog('DeepSeek模型选择下拉框未找到', 'error');
                 return;
             }
-            
+
             if (response.success && response.data.models && response.data.models.length > 0) {
                 // 清空现有选项
                 modelSelect.innerHTML = '';
-                
+
                 // 添加新选项
                 response.data.models.forEach(model => {
                     const option = document.createElement('option');
@@ -439,12 +439,12 @@ class ConfigManager {
                     option.textContent = this.formatDeepSeekModelName(model);
                     modelSelect.appendChild(option);
                 });
-                
+
                 // 设置当前选中的模型
                 if (response.data.current_model) {
                     modelSelect.value = response.data.current_model;
                 }
-                
+
                 Utils.addLog(`成功加载 ${response.data.models.length} 个DeepSeek模型`);
                 Utils.showToast(`成功加载 ${response.data.models.length} 个可用DeepSeek模型`, 'success');
             } else {
@@ -457,7 +457,7 @@ class ConfigManager {
             console.error('加载DeepSeek模型列表异常:', error);
         }
     }
-    
+
     static formatDeepSeekModelName(modelName) {
         // 格式化DeepSeek模型名称显示
         const modelMap = {
@@ -466,21 +466,21 @@ class ConfigManager {
             'deepseek-chat-instruct': 'DeepSeek Chat Instruct (指令对话)',
             'deepseek-reasoner': 'DeepSeek Reasoner (推理模型)'
         };
-        
+
         return modelMap[modelName] || modelName;
     }
-    
+
     static async testDashScopeConnection() {
         try {
             Utils.addLog('开始测试阿里云百炼连接');
             console.log('测试阿里云百炼连接...');
-            
+
             const response = await ApiClient.post('/api/test-dashscope', {});
             console.log('阿里云百炼测试响应:', response);
             Utils.addLog(`阿里云百炼测试响应: ${JSON.stringify(response)}`);
-            
+
             const statusElement = document.getElementById('dashscope-status');
-            
+
             if (response.success) {
                 Utils.showToast('阿里云百炼连接测试成功', 'success');
                 if (statusElement) {
@@ -508,7 +508,7 @@ class ConfigManager {
                         statusElement.className = 'badge bg-danger';
                     }
                 }
-                
+
                 // 打印调试信息
                 if (response.debug_info) {
                     console.log('调试信息:', response.debug_info);
@@ -521,33 +521,33 @@ class ConfigManager {
             console.error('阿里云百炼测试异常:', error);
         }
     }
-    
+
     static async loadDashScopeModels() {
         try {
             Utils.addLog('开始加载阿里云百炼模型列表');
             console.log('加载阿里云百炼模型列表...');
-            
+
             const response = await ApiClient.get('/api/dashscope-models');
             console.log('阿里云百炼模型列表响应:', response);
             Utils.addLog(`阿里云百炼模型列表响应: ${JSON.stringify(response)}`);
-            
+
             // 检查响应状态
             if (!response) {
                 Utils.addLog('阿里云百炼模型列表响应为空', 'error');
                 Utils.showToast('获取模型列表失败：响应为空', 'error');
                 return;
             }
-            
+
             const modelSelect = document.getElementById('dashscope-model');
             if (!modelSelect) {
                 Utils.addLog('阿里云百炼模型选择下拉框未找到', 'error');
                 return;
             }
-            
+
             if (response.success && response.data.models && response.data.models.length > 0) {
                 // 清空现有选项
                 modelSelect.innerHTML = '';
-                
+
                 // 添加模型选项，优先显示description，如果没有则显示id
                 response.data.models.forEach(model => {
                     const option = document.createElement('option');
@@ -556,12 +556,12 @@ class ConfigManager {
                     option.textContent = model.description || model.id;
                     modelSelect.appendChild(option);
                 });
-                
+
                 // 设置当前选中的模型
                 if (response.data.current_model) {
                     modelSelect.value = response.data.current_model;
                 }
-                
+
                 Utils.addLog(`成功加载 ${response.data.models.length} 个阿里云百炼模型`);
                 Utils.showToast(`成功加载 ${response.data.models.length} 个可用阿里云百炼模型`, 'success');
             } else {
@@ -584,21 +584,28 @@ class ArticleGenerator {
             Utils.showToast('页面元素未找到', 'error');
             return;
         }
-        
+
         const title = titleElement.value.trim();
         if (!title) {
             Utils.showToast('请输入文章标题', 'warning');
             return;
         }
-        
+
+        const contentElement = document.getElementById('article-content');
+        const content = contentElement.value.trim();
+        if (!content) {
+            Utils.showToast('请输入文章内容', 'warning');
+            return;
+        }
+
         // 获取AI模型选择
         const aiModelElement = document.getElementById('ai-model-select');
         const ai_model = aiModelElement ? aiModelElement.value : 'gemini';
-        
+
         // 获取生图模型选择
         const imageModelElement = document.getElementById('image-model-select');
         const image_model = imageModelElement ? imageModelElement.value : 'gemini';
-        
+
         // 新增：获取字数和配图数量
         const wordCountElement = document.getElementById('article-word-count');
         const imageCountElement = document.getElementById('article-image-count');
@@ -607,21 +614,22 @@ class ArticleGenerator {
         // 新增：获取参考元素HTML模板
         const formatTemplateElement = document.getElementById('format-template');
         const format_template = formatTemplateElement ? formatTemplateElement.value : '';
-        
+
         try {
             this.showGenerationProgress();
             Utils.addLog(`开始生成文章: ${title}，使用AI模型: ${ai_model}`);
-            
+
             // 新增：将字数和配图数量传递到后端
-            const response = await ApiClient.post('/api/generate-article', { 
-                title, 
-                word_count, 
-                image_count, 
-                format_template, 
+            const response = await ApiClient.post('/api/generate-article', {
+                title,
+                content,
+                word_count,
+                image_count,
+                format_template,
                 ai_model,
                 image_model
             });
-            
+
             if (response.success) {
                 Utils.showToast('文章生成成功', 'success');
                 this.showGenerationResult(response.data);
@@ -636,13 +644,13 @@ class ArticleGenerator {
             this.hideGenerationProgress();
         }
     }
-    
+
     static showGenerationProgress() {
         const progressElement = document.getElementById('generation-progress');
         if (progressElement) {
             progressElement.style.display = 'block';
             this.updateProgress(0, '开始生成...');
-            
+
             // 模拟进度更新
             let progress = 0;
             const interval = setInterval(() => {
@@ -656,7 +664,7 @@ class ArticleGenerator {
             }, 500);
         }
     }
-    
+
     static hideGenerationProgress() {
         const progressElement = document.getElementById('generation-progress');
         if (progressElement) {
@@ -666,11 +674,11 @@ class ArticleGenerator {
             }, 1000);
         }
     }
-    
+
     static updateProgress(percent, text) {
         const progressBar = document.getElementById('progress-bar');
         const progressText = document.getElementById('progress-text');
-        
+
         if (progressBar) {
             progressBar.style.width = percent + '%';
         }
@@ -678,7 +686,7 @@ class ArticleGenerator {
             progressText.textContent = text;
         }
     }
-    
+
     static showGenerationResult(data) {
         // 更新统计
         const totalElement = document.getElementById('total-articles');
@@ -686,7 +694,7 @@ class ArticleGenerator {
             const current = parseInt(totalElement.textContent) || 0;
             totalElement.textContent = current + 1;
         }
-        
+
         // 刷新历史记录显示
         HistoryManager.loadGenerationHistory();
     }
@@ -706,7 +714,7 @@ class HistoryManager {
             Utils.showToast('加载历史记录失败: ' + error.message, 'error');
         }
     }
-    
+
     static async loadPublishHistory() {
         try {
             const response = await ApiClient.get('/api/publish-history');
@@ -719,11 +727,11 @@ class HistoryManager {
             Utils.showToast('加载发布历史失败: ' + error.message, 'error');
         }
     }
-    
+
     static displayGenerationHistory(history) {
         const historyList = document.getElementById('history-list');
         if (!historyList) return;
-        
+
         if (history.length === 0) {
             historyList.innerHTML = `
                 <div class="empty-state">
@@ -734,15 +742,15 @@ class HistoryManager {
             `;
             return;
         }
-        
+
         historyList.innerHTML = '';
         history.forEach(item => {
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
-            
+
             const statusBadge = this.getStatusBadge(item.status);
             const actions = this.getHistoryActions(item);
-            
+
             historyItem.innerHTML = `
                 <div class="history-item-header">
                     <h6>${item.title}</h6>
@@ -753,15 +761,15 @@ class HistoryManager {
                 ${item.digest ? `<p class="text-muted">摘要: ${item.digest.substring(0, 100)}...</p>` : ''}
                 ${actions}
             `;
-            
+
             historyList.appendChild(historyItem);
         });
     }
-    
+
     static displayPublishHistory(history) {
         const publishHistoryList = document.getElementById('publish-history');
         if (!publishHistoryList) return;
-        
+
         if (history.length === 0) {
             publishHistoryList.innerHTML = `
                 <div class="empty-state">
@@ -772,12 +780,12 @@ class HistoryManager {
             `;
             return;
         }
-        
+
         publishHistoryList.innerHTML = '';
         history.forEach(item => {
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
-            
+
             historyItem.innerHTML = `
                 <div class="history-item-header">
                     <h6>${item.title}</h6>
@@ -787,11 +795,11 @@ class HistoryManager {
                 <p>作者: ${item.author}</p>
                 <p class="text-muted">发布ID: ${item.publish_id || 'N/A'}</p>
             `;
-            
+
             publishHistoryList.appendChild(historyItem);
         });
     }
-    
+
     static getStatusBadge(status) {
         const badges = {
             'generated': '<span class="badge bg-primary">已生成</span>',
@@ -800,42 +808,42 @@ class HistoryManager {
         };
         return badges[status] || '<span class="badge bg-secondary">未知</span>';
     }
-    
+
     static getHistoryActions(item) {
         let actions = '';
-        
+
         // 查看按钮
         actions += `<button class="btn btn-sm btn-outline-primary me-2" onclick="HistoryManager.viewArticle('${item.title}', ${JSON.stringify(item).replace(/"/g, '&quot;')})">
             <i class="bi bi-eye"></i> 查看
         </button>`;
-        
+
         // 根据状态显示不同按钮
         if (item.status === 'generated') {
             actions += `<button class="btn btn-sm btn-outline-success me-2" onclick="HistoryManager.loadToPreview('${item.title}', ${JSON.stringify(item).replace(/"/g, '&quot;')})">
                 <i class="bi bi-arrow-up-circle"></i> 加载到预览
             </button>`;
         }
-        
+
         if (item.status === 'saved' && item.media_id) {
             actions += `<button class="btn btn-sm btn-outline-warning me-2" onclick="HistoryManager.publishDraft('${item.media_id}')">
                 <i class="bi bi-send"></i> 发布
             </button>`;
         }
-        
+
         return `<div class="history-actions mt-2">${actions}</div>`;
     }
-    
+
     static async viewArticle(title, item) {
         try {
             if (!item.cache_files || item.cache_files.length === 0) {
                 Utils.showToast('文章内容文件不存在', 'warning');
                 return;
             }
-            
+
             const response = await ApiClient.post('/api/article-content', {
                 cache_files: item.cache_files
             });
-            
+
             if (response.success) {
                 // 显示文章内容
                 const modal = document.createElement('div');
@@ -855,11 +863,11 @@ class HistoryManager {
                         </div>
                     </div>
                 `;
-                
+
                 document.body.appendChild(modal);
                 const modalInstance = new bootstrap.Modal(modal);
                 modalInstance.show();
-                
+
                 // 清理模态框
                 modal.addEventListener('hidden.bs.modal', () => {
                     document.body.removeChild(modal);
@@ -871,18 +879,18 @@ class HistoryManager {
             Utils.showToast('查看文章失败: ' + error.message, 'error');
         }
     }
-    
+
     static async loadToPreview(title, item) {
         try {
             if (!item.cache_files || item.cache_files.length === 0) {
                 Utils.showToast('文章内容文件不存在', 'warning');
                 return;
             }
-            
+
             const response = await ApiClient.post('/api/article-content', {
                 cache_files: item.cache_files
             });
-            
+
             if (response.success) {
                 // 加载到预览区域
                 const article = {
@@ -894,7 +902,7 @@ class HistoryManager {
                     image_count: item.image_count,
                     author: item.author
                 };
-                
+
                 ArticlePreview.showPreview(article);
                 Utils.showToast('文章已加载到预览区域', 'success');
             } else {
@@ -904,15 +912,15 @@ class HistoryManager {
             Utils.showToast('加载文章失败: ' + error.message, 'error');
         }
     }
-    
+
     static async publishDraft(mediaId) {
         try {
             Utils.showToast('正在发布草稿...', 'info');
-            
+
             const response = await ApiClient.post('/api/publish-draft', {
                 media_id: mediaId
             });
-            
+
             if (response.success) {
                 Utils.showToast('草稿发布成功', 'success');
                 // 刷新历史记录
@@ -932,31 +940,31 @@ class ArticlePreview {
     static showPreview(article) {
         const previewElement = document.getElementById('article-preview');
         if (!previewElement) return;
-        
+
         let previewHTML = `<h1>${article.title}</h1>`;
-        
+
         if (article.image_url) {
             previewHTML += `<img src="${article.image_url}" alt="文章配图" style="max-width: 100%; margin-bottom: 1rem;">`;
         }
-        
+
         if (article.digest) {
             previewHTML += `<div class="alert alert-info"><strong>摘要：</strong>${article.digest}</div>`;
         }
-        
+
         previewHTML += article.content;
-        
+
         previewElement.innerHTML = previewHTML;
-        
+
         // 启用保存草稿按钮，发布按钮保持禁用状态直到草稿保存成功
         const publishBtn = document.getElementById('publish-article');
         const draftBtn = document.getElementById('save-draft');
         if (publishBtn) publishBtn.disabled = true;  // 发布按钮初始禁用
         if (draftBtn) draftBtn.disabled = false;     // 保存草稿按钮启用
-        
+
         // 存储文章数据
         window.currentArticle = article;
     }
-    
+
     static hidePreview() {
         const previewElement = document.getElementById('article-preview');
         if (previewElement) {
@@ -968,49 +976,49 @@ class ArticlePreview {
                 </div>
             `;
         }
-        
+
         const publishBtn = document.getElementById('publish-article');
         const draftBtn = document.getElementById('save-draft');
         if (publishBtn) publishBtn.disabled = true;
         if (draftBtn) draftBtn.disabled = true;
-        
+
         window.currentArticle = null;
         window.currentDraftMediaId = null;  // 清除草稿media_id
     }
-    
+
     static async saveDraft() {
         if (!window.currentArticle) {
             Utils.showToast('没有可保存的文章', 'warning');
             return;
         }
-        
+
         try {
             this.showPublishProgress('正在保存草稿...');
             Utils.addLog(`开始保存草稿: ${window.currentArticle.title}`);
-            
+
             // 检查当前文章内容是否包含代理图片URL
             if (window.currentArticle.content.includes('/api/proxy-image')) {
                 Utils.addLog('保存草稿：使用包含代理图片URL的内容');
             } else {
                 Utils.addLog('保存草稿：使用原始内容');
             }
-            
+
             const response = await ApiClient.post('/api/save-draft', {
                 article: window.currentArticle
             });
-            
+
             if (response.success) {
                 this.showPublishResult(response.data, 'success');
                 Utils.showToast('草稿保存成功', 'success');
                 Utils.addLog('草稿保存成功');
-                
+
                 // 存储草稿media_id，用于后续发布
                 window.currentDraftMediaId = response.data.media_id;
-                
+
                 // 启用发布按钮
                 const publishBtn = document.getElementById('publish-article');
                 if (publishBtn) publishBtn.disabled = false;
-                
+
                 // 刷新历史记录
                 HistoryManager.loadGenerationHistory();
             } else {
@@ -1022,38 +1030,38 @@ class ArticlePreview {
             Utils.showToast('保存草稿失败: ' + error.message, 'error');
         }
     }
-    
 
-    
+
+
     static async publishDraft() {
         if (!window.currentDraftMediaId) {
             Utils.showToast('没有可发布的草稿，请先保存草稿', 'warning');
             return;
         }
-        
+
         try {
             this.showPublishProgress('正在发布草稿...');
             Utils.addLog(`开始发布草稿，media_id: ${window.currentDraftMediaId}`);
-            
+
             const response = await ApiClient.post('/api/publish-draft', {
                 media_id: window.currentDraftMediaId
             });
-            
+
             if (response.success) {
                 this.showPublishResult(response.data, 'success');
                 Utils.showToast('草稿发布成功', 'success');
                 Utils.addLog('草稿发布成功');
-                
+
                 // 更新已发布统计
                 const publishedElement = document.getElementById('published-articles');
                 if (publishedElement) {
                     const current = parseInt(publishedElement.textContent) || 0;
                     publishedElement.textContent = current + 1;
                 }
-                
+
                 // 清除草稿media_id
                 window.currentDraftMediaId = null;
-                
+
                 // 刷新历史记录
                 HistoryManager.loadGenerationHistory();
                 HistoryManager.loadPublishHistory();
@@ -1066,21 +1074,21 @@ class ArticlePreview {
             Utils.showToast('发布草稿失败: ' + error.message, 'error');
         }
     }
-    
+
     static showPublishProgress(message) {
         const statusElement = document.getElementById('publish-status');
         const messageElement = document.getElementById('publish-message');
-        
+
         if (statusElement) statusElement.style.display = 'block';
         if (messageElement) messageElement.textContent = message;
     }
-    
+
     static showPublishResult(data, type) {
         const statusElement = document.getElementById('publish-status');
         if (statusElement) {
             const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
             const icon = type === 'success' ? 'bi-check-circle' : 'bi-x-circle';
-            
+
             statusElement.innerHTML = `
                 <h6><i class="bi bi-info-circle"></i> 发布结果</h6>
                 <div class="alert ${alertClass}" role="alert">
@@ -1088,57 +1096,57 @@ class ArticlePreview {
                     ${type === 'success' ? '发布成功' : '发布失败: ' + data.message}
                 </div>
             `;
-            
+
             setTimeout(() => {
                 statusElement.style.display = 'none';
             }, 5000);
         }
     }
-    
+
     static async refreshPreview() {
         try {
             Utils.addLog('开始刷新预览，从cache文件夹加载最新文件');
-            
+
             const response = await ApiClient.get('/api/get-latest-cache-file');
-            
+
             if (response.success && response.data) {
                 const fileInfo = response.data;
-                
+
                 // 显示文件信息
                 Utils.showToast(`已加载文件: ${fileInfo.filename} (${Utils.formatFileSize(fileInfo.size)})`, 'success');
                 Utils.addLog(`成功加载文件: ${fileInfo.filename}, 大小: ${Utils.formatFileSize(fileInfo.size)}, 修改时间: ${fileInfo.modified_time}`);
-                
+
                 // 更新预览内容
                 const previewElement = document.getElementById('article-preview');
                 if (previewElement) {
                     // 处理微信图片防盗链问题
                     let processedContent = fileInfo.content;
-                    
+
                     // 如果后端没有处理图片URL，前端进行处理
                     if (processedContent.includes('http://mmbiz.qpic.cn/')) {
                         processedContent = processedContent.replace(
                             /http:\/\/mmbiz\.qpic\.cn\/[^"']+/g,
-                            function(match) {
+                            function (match) {
                                 return `/api/proxy-image?url=${encodeURIComponent(match)}`;
                             }
                         );
                         Utils.addLog('已处理微信图片URL，使用代理访问');
                     }
-                    
+
                     previewElement.innerHTML = processedContent;
-                    
+
                     // 更新当前文章对象的内容（包含处理后的图片URL）
                     if (window.currentArticle) {
                         window.currentArticle.content = processedContent;
                         Utils.addLog('已更新当前文章内容，包含处理后的图片URL');
                     }
-                    
+
                     // 启用发布按钮
                     const publishBtn = document.getElementById('publish-article');
                     const saveDraftBtn = document.getElementById('save-draft');
                     if (publishBtn) publishBtn.disabled = false;
                     if (saveDraftBtn) saveDraftBtn.disabled = false;
-                    
+
                     Utils.addLog('预览内容已更新');
                 }
             } else {
@@ -1155,7 +1163,7 @@ class ArticlePreview {
 // 主应用类
 class App {
     static _modelsAutoLoaded = false; // 标记是否已自动加载模型列表
-    
+
     static init() {
         try {
             Utils.addLog('初始化微信公众号AI发布系统');
@@ -1168,44 +1176,44 @@ class App {
             console.error('Global error:', error);
         }
     }
-    
+
     static bindEvents() {
         // 配置相关事件
         const saveConfigBtn = document.getElementById('save-config');
         if (saveConfigBtn) {
             saveConfigBtn.addEventListener('click', () => ConfigManager.saveConfig());
         }
-        
+
         const testWeChatBtn = document.getElementById('test-wechat');
         if (testWeChatBtn) {
             testWeChatBtn.addEventListener('click', () => ConfigManager.testWeChatConnection());
         }
-        
+
         const testGeminiBtn = document.getElementById('test-gemini');
         if (testGeminiBtn) {
             testGeminiBtn.addEventListener('click', () => ConfigManager.testGeminiConnection());
         }
-        
+
         const loadGeminiModelsBtn = document.getElementById('load-gemini-models');
         if (loadGeminiModelsBtn) {
             loadGeminiModelsBtn.addEventListener('click', () => ConfigManager.loadGeminiModels());
         }
-        
+
         const testDeepSeekBtn = document.getElementById('test-deepseek');
         if (testDeepSeekBtn) {
             testDeepSeekBtn.addEventListener('click', () => ConfigManager.testDeepSeekConnection());
         }
-        
+
         const loadDeepSeekModelsBtn = document.getElementById('load-deepseek-models');
         if (loadDeepSeekModelsBtn) {
             loadDeepSeekModelsBtn.addEventListener('click', () => ConfigManager.loadDeepSeekModels());
         }
-        
+
         const testDashScopeBtn = document.getElementById('test-dashscope');
         if (testDashScopeBtn) {
             testDashScopeBtn.addEventListener('click', () => ConfigManager.testDashScopeConnection());
         }
-        
+
         const loadDashScopeModelsBtn = document.getElementById('load-dashscope-models');
         if (loadDashScopeModelsBtn) {
             loadDashScopeModelsBtn.addEventListener('click', () => {
@@ -1217,13 +1225,13 @@ class App {
             console.error('阿里云百炼刷新模型按钮未找到');
             Utils.addLog('阿里云百炼刷新模型按钮未找到', 'error');
         }
-        
+
         // 文章生成事件
         const generateBtn = document.getElementById('generate-article');
         if (generateBtn) {
             generateBtn.addEventListener('click', () => ArticleGenerator.generateArticle());
         }
-        
+
         // AI模型选择事件
         const aiModelSelect = document.getElementById('ai-model-select');
         if (aiModelSelect) {
@@ -1233,24 +1241,24 @@ class App {
                 console.log('AI模型切换:', selectedModel);
             });
         }
-        
+
         // 发布相关事件
         const publishBtn = document.getElementById('publish-article');
         if (publishBtn) {
             publishBtn.addEventListener('click', () => ArticlePreview.publishDraft());
         }
-        
+
         const saveDraftBtn = document.getElementById('save-draft');
         if (saveDraftBtn) {
             saveDraftBtn.addEventListener('click', () => ArticlePreview.saveDraft());
         }
-        
+
         // 刷新预览按钮事件
         const refreshPreviewBtn = document.getElementById('refresh-preview-btn');
         if (refreshPreviewBtn) {
             refreshPreviewBtn.addEventListener('click', () => ArticlePreview.refreshPreview());
         }
-        
+
         // 移除表单回车事件，防止重复触发生成文章
         // const titleInput = document.getElementById('article-title');
         // if (titleInput) {
@@ -1261,10 +1269,10 @@ class App {
         //     });
         // }
     }
-    
+
     static async loadInitialConfig() {
         await ConfigManager.loadConfig();
-        
+
         // 只在项目启动时自动加载一次模型列表
         if (!this._modelsAutoLoaded) {
             Utils.addLog('项目启动，自动加载模型列表...');
@@ -1276,14 +1284,14 @@ class App {
         } else {
             Utils.addLog('模型列表已加载过，如需更新请手动点击刷新按钮');
         }
-        
+
         // 加载历史记录
         Utils.addLog('加载历史记录...');
         await HistoryManager.loadGenerationHistory();
         await HistoryManager.loadPublishHistory();
         Utils.addLog('历史记录加载完成');
     }
-    
+
     static startTimeUpdate() {
         Utils.updateCurrentTime();
         setInterval(() => {

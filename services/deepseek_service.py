@@ -83,7 +83,7 @@ class DeepSeekService:
             logger.error(f"生成内容时发生错误: {str(e)}")
             return None
     
-    def generate_article_content(self, title: str, model: str = None, word_count: int = None, format_template: str = '') -> Optional[str]:
+    def generate_article_content(self, title: str,refer_content:str, model: str = None, word_count: int = None, format_template: str = '') -> Optional[str]:
         """
         生成公众号文章内容，支持自定义格式模板
         :param title: 文章标题
@@ -96,7 +96,7 @@ class DeepSeekService:
         if format_template:
             prompt = f"{PromptManager.ROLE_PROMPT}\n请根据以下HTML格式模板，生成一篇关于‘{title}’的公众号文章，排版核心风格要与模板一致，字数约{word_count}字，且最终输出的HTML内容总字符数必须小于等于{char_limit}字符。模板如下：\n{format_template}"
         else:
-            prompt = PromptManager.article_prompt(title, word_count, char_limit)
+            prompt = PromptManager.article_prompt(title, refer_content,word_count, char_limit)
         
         content = self.generate_content(prompt, model)
         

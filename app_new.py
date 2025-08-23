@@ -356,4 +356,4 @@ def before_request():
 
 if __name__ == '__main__':
     logger.info("启动微信公众号AI发布系统")
-    app.run(host='0.0.0.0', port=5000, debug=AppConfig.DEBUG)
+    app.run(host='0.0.0.0', port=5555, debug=AppConfig.DEBUG)

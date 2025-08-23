@@ -8,14 +8,14 @@ class PromptManager:
 
     # 角色定位
     ROLE_PROMPT = """
-你是一位专业的微信公众号内容创作者，拥有丰富的数字媒体经验，精通内容策划、用户心理分析和新媒体营销。你擅长为不同目标受众（如年轻人、职场人士、兴趣爱好者等）创作引人入胜、易于传播的内容，熟悉微信公众号的运营规则、排版规范和传播机制。你能够根据主题和用户需求，灵活调整写作风格（例如专业干货、轻松幽默、温暖治愈），并结合热点、数据或故事提升文章吸引力，确保高阅读量和分享率。
+你是一位专业的微信公众号内容创作者，拥有丰富的数字媒体经验，精通内容策划、用户心理分析和新媒体营销。你擅长为不同目标受众（如社会底层群体、正义人士、民生关注者等）创作引人入胜、易于传播的内容，熟悉微信公众号的运营规则、排版规范和传播机制。你能够根据主题和用户需求，灵活调整写作风格（例如专业干货、轻松幽默、温暖治愈），并结合热点、数据或故事提升文章吸引力，确保高阅读量和分享率。
 """
 
     # 文章生成提示词（通用，Gemini/DeepSeek/阿里云百炼）
     @staticmethod
-    def article_prompt(title, word_count=None, char_limit=20000):
+    def article_prompt(title,refer_content, word_count=None, char_limit=20000):
         word_count_str = f"{word_count}字" if word_count else "1200-1800字"
-        return f"""{PromptManager.ROLE_PROMPT}\n请帮我撰写一篇关于《{title}》的微信公众号文章。请严格遵循您将在下方接收到的HTML排版结构和样式风格进行输出（请直接输出完整的HTML代码，不包含其他说明文字）。\n\n---\n**重要：微信公众号文章内容输出规范**\n1.  **HTML格式：** 必须使用标准的HTML标签和内联`style`属性。\n2.  **禁止JavaScript：** 禁止使用任何JavaScript代码，包括`<script>`标签、`javascript:`协议的链接以及所有HTML元素的`on`事件属性（如`onclick`, `onload`等）。\n4.  **字符数限制：** 最终输出的HTML内容总字符数必须小于等于{char_limit}字符，且可见文本字数约为{word_count_str}。请注意HTML标签和样式本身会占用字符，请在保证排版效果的前提下尽量简洁。\n5.  **禁止外部CSS/内嵌<style>：** 禁止使用外部CSS文件或在HTML中嵌入`<style>`标签，所有样式必须通过元素的`style=""`属性以内联形式声明。\n6.  **`backdrop-filter` 兼容性：** 如果样式定义中包含`backdrop-filter`属性，请注意其在微信Webview中的兼容性可能不稳定，建议作为可选效果，或考虑使用半透明背景替代。\n\nHTML标签使用规范：\n- <h2>、<h3> 用于段落标题\n- <p> 用于正文段落\n- <ul>、<li> 用于要点列表\n- <blockquote> 用于引用或重要观点\n- <strong> 用于强调重要内容\n\n请直接输出HTML格式的文章内容，不要包含其他说明文字或代码块之外的任何文本："""
+        return f"""{PromptManager.ROLE_PROMPT}\n请帮我撰写一篇关于《{title}》的微信公众号文章。严格引用以下内容生成文章，参考内容为：{refer_content}。以上为引用的内容。\n\n请严格遵循您将在下方接收到的HTML排版结构和样式风格进行输出（请直接输出完整的HTML代码，不包含其他说明文字）。\n\n---\n**重要：微信公众号文章内容输出规范**\n1.  **HTML格式：** 必须使用标准的HTML标签和内联`style`属性。\n2.  **禁止JavaScript：** 禁止使用任何JavaScript代码，包括`<script>`标签、`javascript:`协议的链接以及所有HTML元素的`on`事件属性（如`onclick`, `onload`等）。\n4.  **字符数限制：** 最终输出的HTML内容总字符数必须小于等于{char_limit}字符，且可见文本字数约为{word_count_str}。请注意HTML标签和样式本身会占用字符，请在保证排版效果的前提下尽量简洁。\n5.  **禁止外部CSS/内嵌<style>：** 禁止使用外部CSS文件或在HTML中嵌入`<style>`标签，所有样式必须通过元素的`style=""`属性以内联形式声明。\n6.  **`backdrop-filter` 兼容性：** 如果样式定义中包含`backdrop-filter`属性，请注意其在微信Webview中的兼容性可能不稳定，建议作为可选效果，或考虑使用半透明背景替代。\n\nHTML标签使用规范：\n- <h2>、<h3> 用于段落标题\n- <p> 用于正文段落\n- <ul>、<li> 用于要点列表\n- <blockquote> 用于引用或重要观点\n- <strong> 用于强调重要内容\n\n请直接输出HTML格式的文章内容，不要包含其他说明文字或代码块之外的任何文本："""
 
     # 摘要生成提示词（通用）
     @staticmethod
@@ -25,9 +25,9 @@ class PromptManager:
     # 生图生成提示词（Gemini/海报风格）
     @staticmethod
     def image_prompt(title, description=""):
-        base_prompt = f"""{PromptManager.ROLE_PROMPT}\n为文章《{title}》生成一张高质量的海报风格配图。\n\n要求：\n1. 图片风格现代、简洁、专业，具有海报感\n2. 色调温和，适合微信公众号\n3. 构图美观，有设计感\n4. 与文章主题相关\n5. 图片中不要包含过多文字，最好无文字，仅以视觉元素表达主题\n6. 尺寸比例适合作为文章封面\n7. 使用中国读者喜欢的视觉元素\n"""
+        base_prompt = f"""{PromptManager.ROLE_PROMPT}\n为文章《{title}》生成一张高质量的海报风格配图。\n\n要求：\n1. 图片风格现代、简洁、专业，具有海报感\n2. 色调温和，适合微信公众号\n3. 构图美观，有设计感\n4. 与文章主题相关\n5. 图片中不要包含任何文字，仅以视觉元素表达主题\n6. 尺寸比例适合作为文章封面\n7. 使用中国读者喜欢的视觉元素\n"""
         if description:
-            base_prompt += f"\n\n文章描述：{description}\n请根据文章内容生成相关的视觉元素。"
+            base_prompt += f"\n\n文章描述：{description}\n请根据文章内容生成相关的视觉元素，图片中不要包含任何文字，仅以视觉元素表达主题。"
         return base_prompt
 
     # Pexels图片搜索AI提示词
