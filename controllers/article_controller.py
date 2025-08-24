@@ -462,14 +462,15 @@ class ArticleController:
         :return: {'content': 替换后的内容, 'images': [{'media_id':..., 'url':...}, ...]}
         """
         try:
-            import re
+            import re,os
             # 查找所有本地图片路径
             local_image_pattern = r'<img[^>]*src=["\'](cache\\[^"\']+)["\'][^>]*>'
+            if os.name == 'posix':
+                local_image_pattern = r'<img[^>]*src=["\'](cache/[^"\']+)["\'][^>]*>'
             matches = re.findall(local_image_pattern, content)
-            print("local_image_pattern", "content")
-
-            print( content)
-            print("matches",matches)
+            # logger.info("content")
+            # logger.info( content)
+            # logger.info(matches)
             processed_content = content
             images = []
             for local_path in matches:
@@ -708,6 +709,8 @@ class ArticleController:
             # 4. 清理多余空白
             content = content.strip()
             
+            # 去除缩进
+            content = content.replace('        ','')
             cleaned_length = len(content)
             removed_chars = original_length - cleaned_length
             
