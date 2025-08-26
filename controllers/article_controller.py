@@ -2,9 +2,9 @@
 文章控制器模块
 处理文章生成和发布相关的HTTP请求
 """
-
+import json
 import logging
-from flask import request, jsonify
+from flask import request, jsonify  
 from typing import Dict, Any
 from services.config_service import ConfigService
 from services.gemini_service import GeminiService
@@ -57,6 +57,13 @@ class ArticleController:
             
             title = data.get('title', '').strip()
             refer_content = data.get('content', '').strip()
+            # 写入json文件
+            json_data = {
+                'title': title,
+                'content': refer_content
+            }
+            with open('last_article.json', 'w', encoding='utf-8') as f:
+                json.dump(json_data, f, ensure_ascii=False, indent=4)
             if not title:
                 logger.error("文章标题为空")
                 return {

@@ -3,7 +3,7 @@
 基于Flask的微信公众号AI发布系统
 """
 
-import os
+import os,json
 from flask import Flask, render_template, send_from_directory, jsonify, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -34,7 +34,11 @@ os.environ['GEMINI_API_KEY'] = 'AIzaSyDBbZXB_JnMyTM9QrgOVKpQXgWnjWuvPCA'
 def index():
     """主页面"""
     logger.info("访问主页面")
-    return render_template('index.html')
+    with open('last_article.json', 'r', encoding='utf-8') as f:
+        json_data = f.read()
+        json_data = json.loads(json_data)
+        print(json_data)
+    return render_template('index.html',json_data=json_data)
 
 @app.route('/api/config', methods=['GET', 'POST'])
 def handle_config():
