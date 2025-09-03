@@ -6,3 +6,6 @@
 data/history.json
 config.json
 config.json
+config.json
+last_article.json
+static/.DS_Store

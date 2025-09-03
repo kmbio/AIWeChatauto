@@ -1,7 +1,7 @@
 {
-    "wechat_appid": "wx46e51844132eb7b3",
-    "wechat_appsecret": "2df4fe87ae427c8e848d8377f5c4f796",
-    "gemini_api_key": "AIzaSyBq3IbZjBXnlFAT51Tv2i3IhzwQrjFssvU",
+    "wechat_appid": "",
+    "wechat_appsecret": "",
+    "gemini_api_key": "",
     "gemini_model": "gemini-2.5-flash",
     "deepseek_api_key": "",
     "deepseek_model": "deepseek-chat",
@@ -9,13 +9,13 @@
     "dashscope_model": "qwen-turbo",
     "pexels_api_key": "",
     "image_model": "gemini",
-    "author": "时事见闻",
+    "author": "AI笔记",
     "content_source_url": "",
-    "created_at": "2025-08-23 15:57:46",
-    "updated_at": "2025-08-26 14:43:12",
-    "wechat_access_token": "95_pJjpdfFIypbsRbEzI_Xzk2qESn5SVK5YIpzSBOS0BlrhEty_kCtF01PriXGJapeE7hcb8LPqPPV0ZQmy8aFY85fcc40sB4xbC5aphfhtJB46zvkqX2OEQkTHsLEEESbAEAHHV",
+    "created_at": "2025-09-02 21:05:31",
+    "updated_at": "2025-09-03 01:10:15",
+    "wechat_access_token": "95_ZDPYj8_d7kt3VjXEV4U5eJRMxhpafawumCE0SsWIwDLdsz4zvSvDi9mRHqspN-UCmlVea1EbERBMzR5fCBjLOyGAxpAHMsQQVjhTyAqpPfkUcfh4AeGQ-z_tg2sKRVdADADKO",
     "wechat_access_token_expires_in": 7200,
-    "wechat_access_token_expire_time": 1756197792,
-    "wechat_access_token_expire_time_str": "2025-08-26 16:43:12",
-    "wechat_access_token_update_time": "2025-08-26 14:43:12"
+    "wechat_access_token_expire_time": 1756840215,
+    "wechat_access_token_expire_time_str": "2025-09-03 03:10:15",
+    "wechat_access_token_update_time": "2025-09-03 01:10:15"
 }
