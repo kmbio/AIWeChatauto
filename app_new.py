@@ -6,6 +6,7 @@
 import os,json
 from flask import Flask, render_template, send_from_directory, jsonify, request
 from werkzeug.middleware.proxy_fix import ProxyFix
+from functools import wraps
 
 # 导入配置和服务
 from config.app_config import AppConfig, setup_logging
@@ -30,10 +31,22 @@ article_controller = ArticleController()
 # 设置Gemini API密钥
 os.environ['GEMINI_API_KEY'] = 'AIzaSyDBbZXB_JnMyTM9QrgOVKpQXgWnjWuvPCA'
 
+
+def basic_auth_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or auth.username != 'admin' or auth.password != 'lzm111':
+            return '认证失败', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'}
+        return f(*args, **kwargs)
+    return decorated
+
 @app.route('/')
+@basic_auth_required
 def index():
     """主页面"""
     logger.info("访问主页面")
+
     with open('last_article.json', 'r', encoding='utf-8') as f:
         json_data = f.read()
         json_data = json.loads(json_data)
