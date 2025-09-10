@@ -25,9 +25,9 @@ class ConfigService:
     def _get_default_config(self) -> Dict[str, Any]:
         """获取默认配置"""
         return {
-            "wechat_appid": "",
-            "wechat_appsecret": "",
-            "gemini_api_key": "",
+            "wechat_appid": "wx46e51844132eb7b3",
+            "wechat_appsecret": "2df4fe87ae427c8e848d8377f5c4f796",
+            "gemini_api_key": "AIzaSyBq3IbZjBXnlFAT51Tv2i3IhzwQrjFssvU",
             "gemini_model": "gemini-2.5-flash",
             "deepseek_api_key": "",
             "deepseek_model": "deepseek-chat",
@@ -35,7 +35,7 @@ class ConfigService:
             "dashscope_model": "qwen-turbo",
             "pexels_api_key": "",
             "image_model": "gemini",  # 默认生图模型
-            "author": "AI笔记",
+            "author": "时事见闻",
             "content_source_url": "",
             "created_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "updated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
